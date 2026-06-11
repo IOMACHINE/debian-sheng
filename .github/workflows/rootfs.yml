@@ -104,8 +104,6 @@ jobs:
     name: "Build Kernel"
     runs-on: ubuntu-24.04-arm
     if: ${{ inputs.kernel_source == 'custom_build' }}
-    outputs:
-      kernel_version: ${{ steps.build.outputs.kernel_version }}
 
     steps:
       - name: "Checkout Repo"
@@ -252,10 +250,8 @@ jobs:
 
       - name: "Add systemd Service"
         run: |
-          cd fastrpc-1.0.2
-          mkdir -p stage/usr/lib/systemd/system
-          wget -q https://raw.githubusercontent.com/alghiffaryfa19/sheng-sensors-patch/refs/heads/main/fastrpc-1.0.2/adsprpcd-sensorspd.service
-          cp adsprpcd-sensorspd.service stage/usr/lib/systemd/system/
+          mkdir -p fastrpc-1.0.2/stage/usr/lib/systemd/system
+          cp patches/adsprpcd-sensorspd.service fastrpc-1.0.2/stage/usr/lib/systemd/system/
           echo "✓ systemd service added"
 
       - name: "Package fastrpc"
@@ -315,7 +311,7 @@ jobs:
       - name: "Apply Patch"
         run: |
           cd source
-          wget -q https://raw.githubusercontent.com/alghiffaryfa19/sheng-sensors-patch/refs/heads/main/libssc-git/wait_for_qmi_service.patch
+          cp "${{ github.workspace }}/patches/wait_for_qmi_service.patch" .
           patch -Np1 < wait_for_qmi_service.patch || true
           echo "✓ Patch applied"
 
@@ -447,24 +443,19 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
+      - name: "Checkout Repo"
+        uses: actions/checkout@v4
+
       - name: "Install Build Tools"
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget dpkg-dev
+          sudo apt-get install -y dpkg-dev
           echo "✓ Build tools installed"
-
-      - name: "Download Source"
-        run: |
-          wget -q -O source.tar.gz \
-            https://github.com/alghiffaryfa19/sheng-sensors-file/archive/199754bb37ae6d4706bd8d4b23e9e6fec2d959cc.tar.gz
-          tar -xf source.tar.gz
-          echo "✓ Source downloaded"
 
       - name: "Package sheng-sensors"
         run: |
-          SRC_DIR=$(echo sheng-sensors-file-*)
           mkdir -p deb/DEBIAN
-          cp -a "$SRC_DIR"/. deb/
+          cp -r sheng-sensors-files/usr deb/
 
           cat > deb/DEBIAN/control << EOF
           Package: sheng-sensors
@@ -566,7 +557,6 @@ jobs:
     name: "Build RootFS"
     runs-on: ubuntu-24.04-arm
     needs:
-      - build-kernel
       - build-fastrpc
       - build-libssc
       - build-iio-sensor-proxy
