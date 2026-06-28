@@ -816,6 +816,25 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
+      - name: "Download xiaomi-charger-mode"
+        run: |
+          LATEST_TAG=$(gh release list --repo ianchb/xiaomi-charger-mode --limit 1 --json tagName -q '.[0].tagName')
+          gh release download "$LATEST_TAG" \
+            --repo ianchb/xiaomi-charger-mode \
+            --pattern "*.deb" \
+            --clobber
+          echo "✓ xiaomi-charger-mode.deb downloaded"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Upload xiaomi-charger-mode"
+        uses: actions/upload-artifact@v7
+        with:
+          name: xiaomi-charger-mode-deb
+          path: xiaomi-charger-mode*.deb
+          retention-days: 3
+          if-no-files-found: error
+
       # ----------------------------------------------------------------
       # Create Image
       # ----------------------------------------------------------------
