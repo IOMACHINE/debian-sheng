@@ -39,11 +39,6 @@ on:
         type: string
         default: 'username'
 
-      password:
-        description: 'Password (same for root)'
-        type: string
-        default: 'password'
-
       hostname:
         description: 'Hostname'
         type: string
@@ -643,7 +638,12 @@ jobs:
         uses: actions/checkout@v7
 
       - name: "Verify Arguments"
+        env:
+          ROOTFS_PASSWORD: ${{ secrets.ROOTFS_PASSWORD }}
         run: |
+          if [[ -z "$ROOTFS_PASSWORD" ]]; then
+            echo "::warning::ROOTFS_PASSWORD is not set; the image will use the default password 'password'."
+          fi
           if [[ "${{ inputs.boot_mode }}" == "custom" ]]; then
             if [[ "${{ inputs.kernel_source }}" != "custom_build" ]]; then
               echo "Error: Custom partition requires custom_build kernel"
@@ -989,10 +989,17 @@ jobs:
           echo "✓ User ${{ inputs.username }} created"
 
       - name: "Set Passwords"
+        env:
+          ROOTFS_PASSWORD: ${{ secrets.ROOTFS_PASSWORD }}
         run: |
-          echo "${{ inputs.username }}:${{ inputs.password }}" | \
+          if [[ -z "$ROOTFS_PASSWORD" ]]; then
+            ROOTFS_PASSWORD="password"
+          else
+            echo "::add-mask::$ROOTFS_PASSWORD"
+          fi
+          printf '%s:%s\n' "${{ inputs.username }}" "$ROOTFS_PASSWORD" | \
             sudo chroot "$ROOTFS_MOUNT" chpasswd
-          echo "root:${{ inputs.password }}" | \
+          printf 'root:%s\n' "$ROOTFS_PASSWORD" | \
             sudo chroot "$ROOTFS_MOUNT" chpasswd
           echo "✓ Passwords set"
 

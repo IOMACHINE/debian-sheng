@@ -59,7 +59,6 @@ When you trigger the **Build RootFS** workflow via `workflow_dispatch`, the foll
 | **Plasma Mobile** | Install `plasma-mobile` instead of `plasma-desktop` when Desktop Environment is `KDE Plasma`. | `true` / `false` | `false` |
 | **Autologin** | Whether the created user should be logged in automatically. | `true` / `false` | `true` |
 | **Username** | Username for the non-root user. | string | `username` |
-| **Password** | Password for both the user and `root`. | string | `password` |
 | **Hostname** | System hostname. | string | `xiaomi-sheng` |
 | **Boot mode** | Determines which partition Debian boots from. See the [Flashing](#flashing-to-your-device) section for details. | `single (userdata)` – use the entire `userdata` partition; <br> `dual (linux)` – use a dedicated `linux` partition (dual boot); <br> `custom` – use a custom partition name (must be specified below) | `dual (linux)` |
 | **Quiet boot** | Enables a quieter boot flow with Plymouth splash support. For prebuilt kernels, this selects the `_plymouth.img` boot image; for custom kernels, it appends `quiet splash plymouth.ignore-serial-consoles fbcon=map:1` to the boot cmdline. This is ignored when Desktop Environment is set to `server`. | `true` / `false` | `true` |
@@ -72,6 +71,8 @@ When you trigger the **Build RootFS** workflow via `workflow_dispatch`, the foll
 | **Firmware Branch** | Branch to checkout from the firmware repository. | branch name | `master` |
 
 > **Notes**  
+> - To use a custom password, you **must** create a repository secret named `ROOTFS_PASSWORD` before running the workflow. The workflow maps this secret to an environment variable and uses it as the password for both the configured user and `root`.  
+> - If `ROOTFS_PASSWORD` is not set, the image will still be built, but the password will fall back to the insecure default value: `password`.  
 > - If you choose **Boot mode = `custom`**, you **must** fill in the **Custom partition** field.  
 > - If you choose **Kernel source = `custom_build`**, you **must** provide the **Kernel Repo URL**, **Kernel Branch**, and **Kernel Config** fields.  
 ---
