@@ -1224,3 +1224,27 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
           compression-level: 1
+      - name: "Cleanup and Unmount"
+        run: |
+          sudo umount -R "$ROOTFS_MOUNT" || true
+          echo "✓ RootFS unmounted"
+
+      # ----------------------------------------------------------------
+      # Upload Final Images
+      # ----------------------------------------------------------------
+
+      - name: "Upload Boot Image"
+        uses: actions/upload-artifact@v7
+        with:
+          name: boot-image
+          path: boot.img
+          retention-days: 3
+          if-no-files-found: error
+
+      - name: "Upload RootFS Image"
+        uses: actions/upload-artifact@v7
+        with:
+          name: rootfs-image
+          path: rootfs.img
+          retention-days: 3
+          if-no-files-found: error
