@@ -1139,7 +1139,8 @@ jobs:
           sudo chroot "$ROOTFS_MOUNT" apt-get install -y \
             "$PLASMA_PACKAGE" plasma-workspace plasma-nm \
             sddm konsole firefox-esr \
-            dolphin kate
+            dolphin kate \
+            pipewire-alsa
           echo "✓ KDE Plasma installed"
 
       - name: "Install KDE Plasma Plymouth Settings"
